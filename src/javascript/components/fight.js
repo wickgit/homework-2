@@ -33,6 +33,7 @@ export async function fight(firstFighter, secondFighter) {
         };
         const playerOneHealthBar = document.querySelector('#left-fighter-indicator');
         const playerTwoHealthBar = document.querySelector('#right-fighter-indicator');
+        const keyPressed = new Set();
 
         window.addEventListener('keydown', e => {
             switch (e.code) {
@@ -43,6 +44,12 @@ export async function fight(firstFighter, secondFighter) {
                     playerTwo.isBlocking = true;
                     break;
                 default:
+                    if (controls.PlayerOneCriticalHitCombination.includes(e.code)) {
+                        keyPressed.add(e.code);
+                    }
+                    if (controls.PlayerTwoCriticalHitCombination.includes(e.code)) {
+                        keyPressed.add(e.code);
+                    }
                     break;
             }
         });
@@ -52,7 +59,9 @@ export async function fight(firstFighter, secondFighter) {
                 case controls.PlayerOneAttack:
                     if (playerOne.isBlocking || playerTwo.isBlocking) break;
                     playerTwo.currentHealth -= getDamage(playerOne, playerTwo);
-                    playerTwoHealthBar.style.width = `${(playerTwo.currentHealth / playerTwo.health) * 100}%`;
+                    playerTwoHealthBar.style.width = `${
+                        (playerTwo.currentHealth > 0 ? playerTwo.currentHealth / playerTwo.health : 0) * 100
+                    }%`;
                     if (playerTwo.currentHealth <= 0) {
                         resolve(playerTwo);
                     }
@@ -60,7 +69,9 @@ export async function fight(firstFighter, secondFighter) {
                 case controls.PlayerTwoAttack:
                     if (playerTwo.isBlocking || playerOne.isBlocking) break;
                     playerOne.currentHealth -= getDamage(playerOne, playerTwo);
-                    playerOneHealthBar.style.width = `${(playerOne.currentHealth / playerOne.health) * 100}%`;
+                    playerOneHealthBar.style.width = `${
+                        (playerOne.currentHealth > 0 ? playerOne.currentHealth / playerOne.health : 0) * 100
+                    }%`;
                     if (playerOne.currentHealth <= 0) {
                         resolve(playerOne);
                     }
@@ -72,6 +83,45 @@ export async function fight(firstFighter, secondFighter) {
                     playerTwo.isBlocking = false;
                     break;
                 default:
+                    if (
+                        controls.PlayerOneCriticalHitCombination.every(val => keyPressed.has(val)) &&
+                        playerOne.isCritReady
+                    ) {
+                        // if all keys are pressed
+                        playerTwo.currentHealth -= 2 * playerOne.attack;
+                        playerTwoHealthBar.style.width = `${
+                            (playerTwo.currentHealth > 0 ? playerTwo.currentHealth / playerTwo.health : 0) * 100
+                        }%`;
+                        playerOne.isCritReady = false;
+                        setTimeout(() => {
+                            playerOne.isCritReady = true;
+                        }, 10000);
+                        if (playerTwo.currentHealth <= 0) {
+                            resolve(playerOne);
+                        }
+                    } else if (
+                        controls.PlayerTwoCriticalHitCombination.every(val => keyPressed.has(val)) &&
+                        playerTwo.isCritReady
+                    ) {
+                        // if all keys are pressed
+                        playerOne.currentHealth -= 2 * playerTwo.attack;
+                        playerOneHealthBar.style.width = `${
+                            (playerOne.currentHealth > 0 ? playerOne.currentHealth / playerOne.health : 0) * 100
+                        }%`;
+                        playerTwo.isCritReady = false;
+                        setTimeout(() => {
+                            playerTwo.isCritReady = true;
+                        }, 10000);
+                        if (playerOne.currentHealth <= 0) {
+                            resolve(playerTwo);
+                        }
+                    }
+                    if (controls.PlayerOneCriticalHitCombination.includes(e.code)) {
+                        keyPressed.delete(e.code);
+                    }
+                    if (controls.PlayerTwoCriticalHitCombination.includes(e.code)) {
+                        keyPressed.delete(e.code);
+                    }
                     break;
             }
         });
