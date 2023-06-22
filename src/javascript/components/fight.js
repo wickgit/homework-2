@@ -63,7 +63,7 @@ export async function fight(firstFighter, secondFighter) {
                         (playerTwo.currentHealth > 0 ? playerTwo.currentHealth / playerTwo.health : 0) * 100
                     }%`;
                     if (playerTwo.currentHealth <= 0) {
-                        resolve(playerTwo);
+                        resolve(playerOne);
                     }
                     break;
                 case controls.PlayerTwoAttack:
@@ -73,7 +73,7 @@ export async function fight(firstFighter, secondFighter) {
                         (playerOne.currentHealth > 0 ? playerOne.currentHealth / playerOne.health : 0) * 100
                     }%`;
                     if (playerOne.currentHealth <= 0) {
-                        resolve(playerOne);
+                        resolve(playerTwo);
                     }
                     break;
                 case controls.PlayerOneBlock:
